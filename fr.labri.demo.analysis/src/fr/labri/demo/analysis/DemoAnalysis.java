@@ -1,8 +1,16 @@
 package fr.labri.demo.analysis;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import de.lightningbug.api.BugzillaClient;
+import de.lightningbug.api.domain.Bug;
+import de.lightningbug.api.service.BugService;
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
 import fr.labri.harmony.core.dao.Dao;
@@ -22,9 +30,9 @@ public class DemoAnalysis extends AbstractAnalysis{
 	}
 
 	@Override
-	public void runOn(Source src) {
+	public void runOn(Source src) throws MalformedURLException {
 		
-		ArrayList<String> bugReport = new ArrayList<String>();
+		ArrayList<String> bugReport = bugzillaReportExtractor("https://issues.apache.org/bugzilla/", "jjalageas@yahoo.com", "pepsi718");
 		ArrayList<String> links = new ArrayList<String>();
 		bugReport.add("Merged");
 		
@@ -75,6 +83,20 @@ public class DemoAnalysis extends AbstractAnalysis{
 					return report;
 		
 		return null;		
+	}
+	
+	public ArrayList<String> bugzillaReportExtractor(String bugzillaAdress, String username, String password) throws MalformedURLException{
+		
+		ArrayList<String> bugReport = new ArrayList<String>();
+		final BugzillaClient client = new BugzillaClient(new URL(bugzillaAdress), username, password);
+		client.login();
+		final BugService bugService = new BugService(client);
+		final Map<String, Object[]> searchParams = new HashMap<String, Object[]>();
+		searchParams.put("summary", new Object[]{"fix", "bug"});
+		final List<Bug> bugs = bugService.search(searchParams);
+		for(Bug b: bugs)
+			bugReport.add(b.getId().toString());
+		return bugReport;
 	}
 	
 
