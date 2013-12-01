@@ -1,0 +1,11 @@
+[
+	{
+		"url":"https://github.com/jrfaller/test-git.git",
+		"class":"JGitSourceExtractor",
+		"options": {
+                        "bug-files":["/defect/ant-1.3/ant-1.3.csv","/defect/ant-1.4/ant-1.4.csv","/defect/ant-1.5/ant-1.5.csv","/defect/ant-1.6/ant-1.6.csv","/defect/ant-1.7/ant-1.7.csv"],
+                        "snapshots-commits":["268584","269530","272630","275277","486471"]
+                }
+		
+	}
+]

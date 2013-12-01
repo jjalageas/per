@@ -1,0 +1,25 @@
+{
+	"database":{
+		"url":"jdbc:mysql://localhost:3306/",
+		"user":"root",
+		"password":"root",
+		"driver":"com.mysql.jdbc.Driver",
+		"clean-database":true
+	},
+	"scheduler":{
+		"threads":1,
+		"timeout":100000
+	},
+	"source-analyses":[
+		{
+			"class":"DemoAnalysis",
+			"require-harmony-model":true,
+			"require-actions":true
+			
+		}
+	],
+	"folders": {
+		"tmp":"harmonySources"
+	}
+}
+

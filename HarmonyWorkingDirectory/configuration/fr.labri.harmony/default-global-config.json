@@ -1,0 +1,22 @@
+{
+	"database":{
+		"url":"jdbc:h2:test",
+		"user":"sa",
+		"password":"",
+		"driver":"org.h2.Driver",
+		"clean-database":true
+	},
+	"scheduler":{
+		"threads":2,
+		"timeout":100000
+	},
+	"source-analyses":[
+		{
+			"class":"DemoAnalysis",
+			"require-harmony-model":true,
+			"require-actions":true
+			
+		}
+	]
+
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.pde.ui.EquinoxLauncher">
+<booleanAttribute key="append.args" value="true"/>
+<booleanAttribute key="automaticAdd" value="true"/>
+<booleanAttribute key="automaticValidate" value="false"/>
+<stringAttribute key="bootstrap" value=""/>
+<stringAttribute key="checked" value="[NONE]"/>
+<booleanAttribute key="clearConfig" value="true"/>
+<stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/Harmony"/>
+<booleanAttribute key="default" value="true"/>
+<booleanAttribute key="default_auto_start" value="true"/>
+<intAttribute key="default_start_level" value="4"/>
+<booleanAttribute key="includeOptional" value="false"/>
+<stringAttribute key="org.eclipse.debug.ui.ATTR_CONSOLE_ENCODING" value="UTF-8"/>
+<listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+<listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
+<listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -console -consoleLog -debug"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Declipse.ignoreApp=true&#13;&#10;-Dosgi.noShutdown=true&#13;&#10;-Dequinox.ds.debug=true"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc}/HarmonyWorkingDirectory/"/>
+<booleanAttribute key="pde.generated.config" value="true"/>
+<stringAttribute key="pde.version" value="3.3"/>
+<booleanAttribute key="show_selected_only" value="false"/>
+<stringAttribute key="target_bundles" value="au.com.bytecode.opencsv@default:default,com.fasterxml.jackson@default:default,com.ibm.icu@default:default,com.jcraft.jsch@default:default,com.microsoft.tfs.core.httpclient@default:default,com.microsoft.tfs.core.ws.runtime@default:default,com.microsoft.tfs.core.ws@default:default,com.microsoft.tfs.core@default:default,com.microsoft.tfs.jni@default:default,com.microsoft.tfs.logging@default:default,com.microsoft.tfs.util@default:default,com.mysql.jdbc@default:default,com.trilead.ssh2@default:default,fr.labri.harmony.analysis.cloc@default:default,fr.labri.harmony.analysis.ownership@default:default,fr.labri.harmony.analysis.report@default:default,fr.labri.harmony.core@default:default,fr.labri.harmony.source.git@default:default,fr.labri.harmony.source.hg4j@default:default,fr.labri.harmony.source.svnkit@default:default,fr.labri.harmony.source.tfs@default:default,javaewah@default:default,javax.persistence@default:default,javax.xml@default:default,org.apache.commons.io*2.0.1.v201105210651@default:default,org.apache.commons.io*2.4.0@default:default,org.apache.felix.gogo.runtime@default:default,org.apache.felix.gogo.shell@default:default,org.eclipse.core.contenttype@default:default,org.eclipse.core.expressions@default:default,org.eclipse.core.filesystem@default:default,org.eclipse.core.jobs@default:default,org.eclipse.core.resources@default:default,org.eclipse.core.runtime.compatibility.registry@default:false,org.eclipse.core.runtime@default:true,org.eclipse.core.variables@default:default,org.eclipse.debug.core@default:default,org.eclipse.equinox.app@default:default,org.eclipse.equinox.common@2:true,org.eclipse.equinox.console@default:default,org.eclipse.equinox.ds@1:true,org.eclipse.equinox.preferences@default:default,org.eclipse.equinox.registry@default:default,org.eclipse.equinox.util@default:default,org.eclipse.gemini.jpa@default:default,org.eclipse.jgit@default:default,org.eclipse.osgi.services@default:default,org.eclipse.osgi@-1:true,org.eclipse.persistence.antlr@default:default,org.eclipse.persistence.asm@default:default,org.eclipse.persistence.core@default:default,org.eclipse.persistence.jpa.jpql@default:default,org.eclipse.persistence.jpa@default:default,org.eclipse.persistence.oracle@default:false,org.h2@default:default,org.hamcrest.core@default:default,org.jfree.chart@default:default,org.junit@default:default,org.tmatesoft.hg4j@default:default,org.tmatesoft.sqljet@default:default,org.tmatesoft.svnkit@default:default,osgi.enterprise@default:default"/>
+<booleanAttribute key="tracing" value="false"/>
+<booleanAttribute key="useCustomFeatures" value="false"/>
+<booleanAttribute key="useDefaultConfigArea" value="true"/>
+</launchConfiguration>
