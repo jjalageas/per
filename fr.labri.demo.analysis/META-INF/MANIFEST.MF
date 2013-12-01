@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Export-Package: fr.labri.demo.analysis
+Require-Bundle: fr.labri.harmony.core,
+ org.h2,
+ com.mysql.jdbc,
+ org.eclipse.equinox.registry
+Service-Component: OSGI-INF/*.xml
+Bundle-Version: 1.0.0.qualifier
+Bundle-Name: fr.labri.demo.analysis
+Bundle-ManifestVersion: 2
+Import-Package: javax.persistence;version="2.0.4",
+ junit.framework;version="4.11.0",
+ org.osgi.framework;version="1.7.0"
+Bundle-SymbolicName: fr.labri.demo.analysis
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+
