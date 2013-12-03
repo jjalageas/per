@@ -1,7 +1,7 @@
 [
 	{
-		"url":"https://svn.apache.org/repos/asf/ant/core/trunk/",
-                "class":"SvnKitSourceExtractor"
+		"url":"https://github.com/jjalageas/perTest",
+                "class":"JGitKitSourceExtractor"
 		
 	}
 ]
