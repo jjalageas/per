@@ -19,26 +19,23 @@ import fr.labri.harmony.core.model.Author;
 import fr.labri.harmony.core.model.Source;
 
 
+
 public class DemoAnalysis extends AbstractAnalysis{
     
-
 	public DemoAnalysis() {
 		super();		
 	}
 
-
 	public DemoAnalysis(AnalysisConfiguration config, Dao dao, Properties properties) {
 		super(config, dao, properties);
 	}
-
 
 	@Override
 	public void runOn(Source src) throws MalformedURLException {
 		
 		ArrayList<String> bugReport = bugzillaReportExtractor("https://issues.apache.org/bugzilla/", "jjalageas@yahoo.com", "pepsi718");
 		ArrayList<String> links = new ArrayList<String>();
-		bugReport.add("Merged");
-		
+
 		//Liste les classes contenues dans le dépôt
 		for(Object o: src.getItems().toArray())
 			System.out.println(o.toString());
@@ -52,38 +49,39 @@ public class DemoAnalysis extends AbstractAnalysis{
 			HarmonyLogger.info(auth.getName()+" made "+auth.getEvents().size()+" commits to the projects: "+src.getUrl());
 			
 			for (int i=0; i<auth.getEvents().size(); i++){
-			    
-			    //Affiche l'ID du commit
-			    System.out.println("Commit ID");
-			    System.out.println(auth.getEvents().get(i).getNativeId());
+				
+				//Affiche le commit ID
+				System.out.println("Commit ID");
+				System.out.println(auth.getEvents().get(i).getNativeId());
+				
+				//Affiche la date et l'heure du commit
+				System.out.println("Commit Timestamp");
+				System.out.println(auth.getEvents().get(i).getTimestampAsString());
+				
+				//Affiche le message du commit
+				System.out.println("Commit Log");
+				String commitLog = auth.getEvents().get(i).getMetadata().get("commit_message");
+				System.out.println(commitLog);
+				
+				//Recherche d'un lien avec un bug
+				String link = compareLogToReport(commitLog, bugReport);
+				if(link != null){
+					String linkDisplay = "Commit " + auth.getEvents().get(i).getNativeId() + " linked to bug " + link;
+					links.add(linkDisplay);
+					}			
+				}
 
-			    //Affiche la date et l'heure du commit
-			    System.out.println("Commit Timestamp");
-			    System.out.println(auth.getEvents().get(i).getTimestampAsString());
-				
-			    //Affiche le message du commit
-			    System.out.println("Commit Log");
-			    String commitLog = auth.getEvents().get(i).getMetadata().get("commit_message");
-			    System.out.println(commitLog);
-				
-			    //Recherche d'un lien avec un bug
-			    String link = compareLogToReport(commitLog, bugReport);
-			    if(link != null){
-				String linkDisplay = "Commit " + auth.getEvents().get(i).getNativeId() + " linked to bug " + link;
-				links.add(linkDisplay);
-			    }			
 			}
-
-		}
 		
 		for(String s: links)
-		    System.out.println(s);
-	}
+			System.out.println(s);
+		
+		}
 	
-
+	
 	public String compareLogToReport(String commitLog, ArrayList<String> bugReportIds){
 		
-		String delims = " .,";
+		String delims = "[ , #]+";
 		String[] logTokens = commitLog.split(delims);
 
 		for(String log: logTokens)
@@ -91,18 +89,18 @@ public class DemoAnalysis extends AbstractAnalysis{
 				if(log.equals(report))
 					return report;
 		
-		return null;		
+		return null;
 	}
 	
-
-	public ArrayList<String> bugzillaReportExtractor(String bugzillaAdress, String username, String password) throws MalformedURLException{
+	
+	public ArrayList<String> bugzillaReportExtractor(String bugzillaAddress, String username, String password) throws MalformedURLException{
 		
 		ArrayList<String> bugReport = new ArrayList<String>();
-		final BugzillaClient client = new BugzillaClient(new URL(bugzillaAdress), username, password);
+		final BugzillaClient client = new BugzillaClient(new URL(bugzillaAddress), username, password);
 		client.login();
 		final BugService bugService = new BugService(client);
 		final Map<String, Object[]> searchParams = new HashMap<String, Object[]>();
-		searchParams.put("product", new Object[]{"ant"});
+		searchParams.put("summary", new Object[]{"ant"});
 		final List<Bug> bugs = bugService.search(searchParams);
 		for(Bug b: bugs)
 			bugReport.add(b.getId().toString());
