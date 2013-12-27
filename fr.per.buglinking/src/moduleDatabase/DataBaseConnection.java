@@ -16,7 +16,7 @@ public final class DataBaseConnection {
 
 	private static String url;
 	private static String user = "pchanson";
-	private static String password = "Chans-16";
+	private static String password = "****";
 	private static String host = "dbserver";
 	private static String port = "3306";
 	private static String bdd = "pchanson";
