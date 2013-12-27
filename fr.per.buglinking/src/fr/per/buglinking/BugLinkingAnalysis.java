@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jpaDatabase.DatabaseApi;
+import jpaDatabase.IssueDao;
 import moduleDatabase.DatabaseApiSql;
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
@@ -20,7 +21,7 @@ public class BugLinkingAnalysis extends AbstractAnalysis{
 	
 	private static String projectKey = "AMQ";
 	private static DatabaseApi issueDatabase2;
-	private static DatabaseApiSql issueDatabase;
+	private static IssueDao issueDatabase;
 	
 	public static int nbCommit = 0;
 	public static int nbLink = 0;
@@ -39,7 +40,7 @@ public class BugLinkingAnalysis extends AbstractAnalysis{
 		//TODO Récupérer les bugs dans la bdd et las stocker dans une HashMap
 		//TODO Comparer Les logs et les bug reports
 		
-		issueDatabase = new DatabaseApiSql();
+		issueDatabase = new IssueDao();
 		
 		Map<String, String> bugReport  = new HashMap<String, String>();
 		ArrayList<String> links = new ArrayList<String>();

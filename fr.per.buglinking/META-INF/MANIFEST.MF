@@ -9,4 +9,8 @@ Import-Package: javax.persistence;version="2.0.4", org.osgi.framework;
  version="1.7.0"
 Bundle-SymbolicName: fr.per.buglinking
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ClassPath: moduleBdd/com.mysql.jdbc_5.1.5.jar,
+ moduleBdd/eclipselink.jar,
+ moduleBdd/javax.persistence_2.1.0.v201304241213.jar,
+ .
 
