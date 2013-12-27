@@ -97,7 +97,7 @@ public class DatabaseApiSql implements DatabaseApi {
 	}
 
 	public boolean isIssue(String issue_id) {
-		String s = getStringFromBdd("issues", "issue_id", "issue_key", issue_id);
+		String s = getStringFromBdd("ISSUE", "issue_id", "issue_key", issue_id);
 		if (s.compareTo("") != 0)
 			return true;
 		return false;

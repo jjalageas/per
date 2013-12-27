@@ -8,9 +8,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import moduleDatabase.DatabaseApiSql;
 import jpaDatabase.DatabaseApi;
-import jpaDatabase.IssueDao;
+import moduleDatabase.DatabaseApiSql;
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
 import fr.labri.harmony.core.dao.Dao;
@@ -20,7 +19,9 @@ import fr.labri.harmony.core.model.Source;
 public class BugLinkingAnalysis extends AbstractAnalysis{
 	
 	private static String projectKey = "AMQ";
+	private static DatabaseApi issueDatabase2;
 	private static DatabaseApiSql issueDatabase;
+	
 	public static int nbCommit = 0;
 	public static int nbLink = 0;
 	
