@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Export-Package: fr.per.bugextraction
+Require-Bundle: fr.labri.harmony.core, org.h2, com.mysql.jdbc
+Service-Component: OSGI-INF/*.xml
+Bundle-Version: 1.0.0.qualifier
+Bundle-Name: fr.per.bugextraction
+Bundle-ManifestVersion: 2
+Import-Package: javax.persistence;version="2.0.4", org.osgi.framework;
+ version="1.7.0"
+Bundle-SymbolicName: fr.per.bugextraction
+Meta-Persistence: META-INF/persistence.xml
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ClassPath: WEB-INF/lib/swizzle-jirareport-1.6-dep.jar,
+ .
+
