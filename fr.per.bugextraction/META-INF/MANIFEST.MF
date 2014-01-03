@@ -1,15 +1,26 @@
 Manifest-Version: 1.0
 Export-Package: fr.per.bugextraction
-Require-Bundle: fr.labri.harmony.core, org.h2, com.mysql.jdbc
+Require-Bundle: fr.labri.harmony.core,
+ org.h2;bundle-version="1.3.173",
+ com.mysql.jdbc;bundle-version="5.1.26"
 Service-Component: OSGI-INF/*.xml
 Bundle-Version: 1.0.0.qualifier
 Bundle-Name: fr.per.bugextraction
 Bundle-ManifestVersion: 2
-Import-Package: javax.persistence;version="2.0.4", org.osgi.framework;
- version="1.7.0"
 Bundle-SymbolicName: fr.per.bugextraction
 Meta-Persistence: META-INF/persistence.xml
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Bundle-ClassPath: WEB-INF/lib/swizzle-jirareport-1.6-dep.jar,
- .
+Bundle-ClassPath: .,
+ WEB-INF/lib/swizzle-jira-1.6.2.jar,
+ WEB-INF/lib/ws-commons-util-1.0.2.jar,
+ WEB-INF/lib/commons-logging-1.1.jar,
+ WEB-INF/lib/xmlrpc-common-3.1.3.jar,
+ WEB-INF/lib/xmlrpc-server-3.1.3.jar,
+ WEB-INF/lib/sisu-xmlrpc-client-1.2.0.jar,
+ WEB-INF/lib/async-http-client-1.6.1.jar,
+ WEB-INF/lib/log4j-1.2.16.jar,
+ WEB-INF/lib/netty-3.2.9.Final.jar,
+ WEB-INF/lib/slf4j-api-1.7.5.jar
+Import-Package: javax.persistence;version="2.1.0",
+ org.osgi.framework;version="1.7.0"
 

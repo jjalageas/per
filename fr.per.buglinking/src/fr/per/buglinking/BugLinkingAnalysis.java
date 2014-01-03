@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 
 import jpaDatabase.DatabaseApi;
 import jpaDatabase.IssueDao;
-import moduleDatabase.DatabaseApiSql;
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
 import fr.labri.harmony.core.dao.Dao;
