@@ -11,6 +11,8 @@ import org.codehaus.swizzle.jira.Jira;
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
 import fr.labri.harmony.core.dao.Dao;
+import fr.labri.harmony.core.model.Author;
+import fr.labri.harmony.core.model.Event;
 import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
