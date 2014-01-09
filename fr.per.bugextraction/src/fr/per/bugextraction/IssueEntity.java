@@ -16,8 +16,8 @@ public class IssueEntity implements java.io.Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
-
+	private static final long serialVersionUID = 3282397399077346183L;
+	
 	private String issue_key;
 
 	private String status;
