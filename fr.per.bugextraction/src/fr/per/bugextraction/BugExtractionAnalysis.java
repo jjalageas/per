@@ -1,5 +1,6 @@
 package fr.per.bugextraction;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import java.util.regex.Pattern;
 import org.codehaus.swizzle.jira.Issue;
 import org.codehaus.swizzle.jira.Jira;
 
+import com.sun.org.apache.xpath.internal.FoundIndex;
+
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
 import fr.labri.harmony.core.dao.Dao;
@@ -24,7 +27,10 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 	public static String PROJECT_KEY = "AMQ-";
 	private static VerifiedLinksExtractor linkExtractor;
-
+	public static int truePositives = 0;
+	public static int falsePositives = 0;
+	public static int falseNegatives = 0;
+	
 	public BugExtractionAnalysis() {
 		super();		
 	}
@@ -35,7 +41,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 	@Override
 	public void runOn(Source src) throws Exception {
-		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
+		
 		//extraction(src);
 		linkingAnalysis(src);
 	}
@@ -58,6 +64,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			e.printStackTrace();
 		}
 		issueList = new ArrayList<IssueEntity>();
+		//TODO remplacer le test par les min et max de VerifiedLinksExtractor
 		int issuecount = 1109;
 		while(issuecount < 1114) {
 			Issue i = null;
@@ -84,13 +91,14 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 	}
 
 	public void linkingAnalysis(Source src){
+		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
 		int nbCommit = 0;
 		int nbLink = 0;
 		Map<String, String> bugReport  = fillBugReport(src);
 
 		ArrayList<String> links = new ArrayList<String>();
 		System.out.println("DEBUT DE LANALYSE:");
-
+		LinkMap foundLinks = new LinkMap();
 		for (Author auth : src.getAuthors()) {
 			for (int i=0; i<auth.getEvents().size(); i++){
 				nbCommit++;
@@ -100,21 +108,29 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				ArrayList<String> link = compareLogToBugReport(commitLog, bugReport, PROJECT_KEY);
 				if(link.size() > 0){
 					for(String l: link){
-						String linkDisplay = "Commit " + auth.getEvents().get(i).getNativeId() 
+						String commit = auth.getEvents().get(i).getNativeId();
+						foundLinks.put(l, commit);
+						String linkDisplay = "Commit " + commit
 								+" linked to bug " + l;
 						links.add(linkDisplay);
 					}			
 				}
 			}
 		}
-
+		checkLinks(foundLinks);
 		nbLink = links.size();
-		System.out.println("Nombre de links : " + nbLink);
-		System.out.println("Nombre de commits : " + nbCommit);
-
+		
 		for(String s: links)
 			System.out.println(s);
 		System.out.println();
+		
+		
+		System.out.println("Nombre de links : " + nbLink);
+		System.out.println("Nombre de commits : " + nbCommit);
+		System.out.println("Nombre de truePositives : " + truePositives);
+		System.out.println("Nombre de falseNegative : " + falseNegatives);
+		System.out.println("Nombre de falsePositive : " + falsePositives);
+	
 
 	}
 
@@ -152,8 +168,9 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		}
 		return linkReport;
 	}
-	
+
 	public static void dumpDatabase(String db) {
+		//TODO fix le path relatif du dump
 		Runtime r = Runtime.getRuntime();
 		Process p;
 		String fileName = PROJECT_KEY + "Dump.sql";
@@ -165,6 +182,27 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			e.printStackTrace();
 		}
 		System.out.println("Dump Terminé : fichier dump accessible à : \n" + linksFile.getAbsolutePath());
+	}
+
+	public static void checkLinks(LinkMap links) {
+		LinkMap verifiedLinks = linkExtractor.getLinksMap();
+		for (Map.Entry<String, List<String>> entry : links.getLinksMap().entrySet())
+		{
+			String bugKey = entry.getKey();
+			if(verifiedLinks.containsKey(entry.getKey())) {
+				for(String commit : entry.getValue())
+					if(verifiedLinks.valueContains(entry.getKey(), commit))
+						truePositives++;
+					else
+						falsePositives++;
+				List<String> verifiedCommits = (List<String>) verifiedLinks.get(bugKey);
+				int nbVerifiedCommits = verifiedCommits.size();
+				int nbCommits = entry.getValue().size();
+				falseNegatives += nbVerifiedCommits > nbCommits ? nbVerifiedCommits - nbCommits : 0;
+			}
+			else
+				falsePositives++;
+		}
 	}
 }
 
