@@ -1,6 +1,5 @@
 package fr.per.bugextraction;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,12 +58,12 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			e.printStackTrace();
 		}
 		issueList = new ArrayList<IssueEntity>();
-		int currentId = linkExtractor.getMinBugId();
-		while(currentId <= linkExtractor.getMaxBugId()) {
+		int issuecount = 1109;
+		while(issuecount < 1114) {
 			Issue i = null;
-
+			issuecount ++;
 			StringBuffer issueKey = new StringBuffer(PROJECT_KEY);
-			issueKey.append(currentId);
+			issueKey.append(issuecount);
 			try {
 				i = jira.getIssue(issueKey.toString());
 				if(i != null)
@@ -76,12 +75,11 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				e.printStackTrace();
 				continue;
 			}
-			System.out.println(currentId);
-			currentId ++;
+			System.out.println(issuecount);
 		}
 		for(IssueEntity ie : issueList)
 			dao.saveData(getPersitenceUnitName(), ie, src);
-		dumpDatabase(getPersitenceUnitName());
+		System.out.println("Nombre de bugs trouvés : " + issuecount);
 		System.out.println("Extraction Reussie");
 	}
 
@@ -102,7 +100,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				ArrayList<String> link = compareLogToBugReport(commitLog, bugReport, PROJECT_KEY);
 				if(link.size() > 0){
 					for(String l: link){
-						String linkDisplay = "Commit " + auth.getEvents().get(i).getId() 
+						String linkDisplay = "Commit " + auth.getEvents().get(i).getNativeId() 
 								+" linked to bug " + l;
 						links.add(linkDisplay);
 					}			
@@ -147,8 +145,10 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 		while (matcher.find()) {
 			String foundID = matcher.group();
-			if (bugReport.containsKey(foundID))
+			if (bugReport.containsKey(foundID)){
 				System.out.println("Id bug trouve : " + foundID);
+				linkReport.add(foundID);
+			}
 		}
 		return linkReport;
 	}
