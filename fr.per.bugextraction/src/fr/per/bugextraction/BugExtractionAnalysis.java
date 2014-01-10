@@ -34,7 +34,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 	@Override
 	public void runOn(Source src) throws Exception {
-		//extraction(src);
+		extraction(src);
 		linkingAnalysis(src);
 	}
 
@@ -56,8 +56,8 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			e.printStackTrace();
 		}
 		issueList = new ArrayList<IssueEntity>();
-		int issuecount = 0;
-		while(issuecount < 10) {
+		int issuecount = 1109;
+		while(issuecount < 1114) {
 			Issue i = null;
 			issuecount ++;
 			StringBuffer issueKey = new StringBuffer(PROJECT_KEY);
@@ -98,7 +98,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				ArrayList<String> link = compareLogToBugReport(commitLog, bugReport, PROJECT_KEY);
 				if(link.size() > 0){
 					for(String l: link){
-						String linkDisplay = "Commit " + auth.getEvents().get(i).getId() 
+						String linkDisplay = "Commit " + auth.getEvents().get(i).getNativeId() 
 								+" linked to bug " + l;
 						links.add(linkDisplay);
 					}			
@@ -143,8 +143,10 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 		while (matcher.find()) {
 			String foundID = matcher.group();
-			if (bugReport.containsKey(foundID))
+			if (bugReport.containsKey(foundID)){
 				System.out.println("Id bug trouve : " + foundID);
+				linkReport.add(foundID);
+			}
 		}
 		return linkReport;
 	}
