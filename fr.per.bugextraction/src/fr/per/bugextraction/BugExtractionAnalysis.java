@@ -1,5 +1,6 @@
 package fr.per.bugextraction;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +23,8 @@ import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
 
-	public static String PROJECT_KEY = "AMQ-";   
+	public static String PROJECT_KEY = "AMQ-";
+	private static VerifiedLinksExtractor linkExtractor;
 
 	public BugExtractionAnalysis() {
 		super();		
@@ -34,6 +36,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 	@Override
 	public void runOn(Source src) throws Exception {
+		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
 		//extraction(src);
 		linkingAnalysis(src);
 	}
@@ -56,12 +59,12 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			e.printStackTrace();
 		}
 		issueList = new ArrayList<IssueEntity>();
-		int issuecount = 0;
-		while(issuecount < 10) {
+		int currentId = linkExtractor.getMinBugId();
+		while(currentId <= linkExtractor.getMaxBugId()) {
 			Issue i = null;
-			issuecount ++;
+
 			StringBuffer issueKey = new StringBuffer(PROJECT_KEY);
-			issueKey.append(issuecount);
+			issueKey.append(currentId);
 			try {
 				i = jira.getIssue(issueKey.toString());
 				if(i != null)
@@ -73,11 +76,12 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				e.printStackTrace();
 				continue;
 			}
-			System.out.println(issuecount);
+			System.out.println(currentId);
+			currentId ++;
 		}
 		for(IssueEntity ie : issueList)
 			dao.saveData(getPersitenceUnitName(), ie, src);
-		System.out.println("Nombre de bugs trouvés : " + issuecount);
+		dumpDatabase(getPersitenceUnitName());
 		System.out.println("Extraction Reussie");
 	}
 
@@ -147,6 +151,20 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				System.out.println("Id bug trouve : " + foundID);
 		}
 		return linkReport;
+	}
+	
+	public static void dumpDatabase(String db) {
+		Runtime r = Runtime.getRuntime();
+		Process p;
+		String fileName = PROJECT_KEY + "Dump.sql";
+		java.io.File linksFile = new java.io.File("resources/" + fileName);
+		//ProcessBuilder pb = new ProcessBuilder("mysqldump --opt -h localhost -u root -p pchanson > cleanActiveMQ.sql");
+		try {
+			p = r.exec("mysqldump --opt -h localhost -u root --password=harmony" + db + " > " + linksFile.getAbsolutePath());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Dump Terminé : fichier dump accessible à : \n" + linksFile.getAbsolutePath());
 	}
 }
 

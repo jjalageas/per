@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
 import fr.labri.harmony.core.dao.Dao;
@@ -38,13 +40,14 @@ public class BugLinkingAnalysis extends AbstractAnalysis{
 		Map<String, String> bugReport  = new HashMap<String, String>();
 		Source bugSource = dao.getSource(2);
 		System.out.println(bugSource.getUrl());
-		issueList = dao.getData(getPersitenceUnitName(), IssueEntity.class, src);
+		issueList = dao.getData(get, IssueEntity.class, bugSource);
 		System.out.println("NOMBRE ID TROUVE " + issueList.size());
 		for (IssueEntity ie : issueList) {
 			
 			bugReport.put(ie.getIssue_key(), ie.getStatus());
 
 		}
+		
 
 		ArrayList<String> links = new ArrayList<String>();
 		System.out.println("DEBUT DE LANALYSE");
@@ -78,21 +81,21 @@ public class BugLinkingAnalysis extends AbstractAnalysis{
 			System.out.println("bug recupere : " + ent.getKey());
 	}
 
-
-	//	public ArrayList<String> compareLogToReport(String commitLog, Map<String, String> bugReportIds, String pk){
-	//
-	//		ArrayList<String> linkReport = new ArrayList<String>();
-	//		Pattern pattern = Pattern.compile(pk + "\\-" + "(\\d)*");
-	//		Matcher matcher = pattern.matcher(commitLog);
-	//
-	//		while (matcher.find()) {
-	//			String foundID = matcher.group();
-	//			System.out.println("Id bug trouve : " + foundID);
-	//				if(issueDatabase.isIssue(foundID)) {
-	//					linkReport.add(foundID);
-	//				}
-	//
-	//		}
-	//		return linkReport;
-	//	}
+//
+//		public ArrayList<String> compareLogToReport(String commitLog, Map<String, String> bugReportIds, String pk){
+//	
+//			ArrayList<String> linkReport = new ArrayList<String>();
+//			Pattern pattern = Pattern.compile(pk + "\\-" + "(\\d)*");
+//			Matcher matcher = pattern.matcher(commitLog);
+//	
+//			while (matcher.find()) {
+//				String foundID = matcher.group();
+//				System.out.println("Id bug trouve : " + foundID);
+//					if(issueDatabase.isIssue(foundID)) {
+//						linkReport.add(foundID);
+//					}
+//	
+//			}
+//			return linkReport;
+//		}
 }
