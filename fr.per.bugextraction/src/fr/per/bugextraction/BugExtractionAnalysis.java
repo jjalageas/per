@@ -14,9 +14,6 @@ import java.util.regex.Pattern;
 
 import org.codehaus.swizzle.jira.Issue;
 import org.codehaus.swizzle.jira.Jira;
-
-import com.sun.org.apache.xpath.internal.FoundIndex;
-
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
 import fr.labri.harmony.core.dao.Dao;
@@ -25,7 +22,7 @@ import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
 
-	public static String PROJECT_KEY = "AMQ-";
+	public static String PROJECT_KEY = "XALANC-";
 	private static VerifiedLinksExtractor linkExtractor;
 	public static int truePositives = 0;
 	public static int falsePositives = 0;
@@ -41,14 +38,16 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 	@Override
 	public void runOn(Source src) throws Exception {
-		
-		//extraction(src);
+
+	    extraction(src);
 		linkingAnalysis(src);
+
 	}
 
 	public void extraction(Source src){
 		Jira jira = null;
 		List<IssueEntity> issueList = null;
+		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
 
 		try {
 			jira = new Jira("https://issues.apache.org/jira/rpc/xmlrpc");
@@ -65,14 +64,11 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		}
 		issueList = new ArrayList<IssueEntity>();
 		//TODO remplacer le test par les min et max de VerifiedLinksExtractor
-		int issuecount = 1109;
-		while(issuecount < 1114) {
-			Issue i = null;
-			issuecount ++;
-			StringBuffer issueKey = new StringBuffer(PROJECT_KEY);
-			issueKey.append(issuecount);
+		ArrayList<String> bugIds= linkExtractor.getBugIds();
+		for(String id: bugIds) {	
+			Issue i = null;	
 			try {
-				i = jira.getIssue(issueKey.toString());
+				i = jira.getIssue(id);
 				if(i != null)
 				{
 					IssueEntity ie = new IssueEntity(i.getKey(), i.getStatus().toString());
@@ -82,16 +78,16 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				e.printStackTrace();
 				continue;
 			}
-			System.out.println(issuecount);
+			System.out.println(id);
+
 		}
 		for(IssueEntity ie : issueList)
 			dao.saveData(getPersitenceUnitName(), ie, src);
-		System.out.println("Nombre de bugs trouvés : " + issuecount);
+		System.out.println("Nombre de bugs trouvés : " + bugIds.size());
 		System.out.println("Extraction Reussie");
 	}
 
 	public void linkingAnalysis(Source src){
-		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
 		int nbCommit = 0;
 		int nbLink = 0;
 		Map<String, String> bugReport  = fillBugReport(src);
@@ -117,7 +113,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				}
 			}
 		}
-		checkLinks(foundLinks);
+		checkLinks(foundLinks, links.size(), linkExtractor.getLinksMap());
 		nbLink = links.size();
 		
 		for(String s: links)
@@ -130,7 +126,6 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		System.out.println("Nombre de truePositives : " + truePositives);
 		System.out.println("Nombre de falseNegative : " + falseNegatives);
 		System.out.println("Nombre de falsePositive : " + falsePositives);
-	
 
 	}
 
@@ -164,7 +159,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			if (bugReport.containsKey(foundID)){
 				System.out.println("Id bug trouve : " + foundID);
 				linkReport.add(foundID);
-			}
+			}			
 		}
 		return linkReport;
 	}
@@ -177,15 +172,16 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		java.io.File linksFile = new java.io.File("resources/" + fileName);
 		//ProcessBuilder pb = new ProcessBuilder("mysqldump --opt -h localhost -u root -p pchanson > cleanActiveMQ.sql");
 		try {
-			p = r.exec("mysqldump --opt -h localhost -u root --password=harmony" + db + " > " + linksFile.getAbsolutePath());
+			p = r.exec("mysqldump --opt -h localhost -u root --password=pepsi718" + db + " > " + linksFile.getAbsolutePath());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		System.out.println("Dump Terminé : fichier dump accessible à : \n" + linksFile.getAbsolutePath());
 	}
 
-	public static void checkLinks(LinkMap links) {
-		LinkMap verifiedLinks = linkExtractor.getLinksMap();
+	public static void checkLinks(LinkMap links, int nbLinks, LinkMap verifiedLinksMap) {
+		LinkMap verifiedLinks = verifiedLinksMap;
+		System.out.println(linkExtractor.getNbLines());
 		for (Map.Entry<String, List<String>> entry : links.getLinksMap().entrySet())
 		{
 			String bugKey = entry.getKey();
@@ -203,6 +199,9 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			else
 				falsePositives++;
 		}
+
+
+
 	}
 }
 
