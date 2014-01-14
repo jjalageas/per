@@ -1,6 +1,8 @@
 package fr.per.bugextraction;
 
 
+import java.util.Date;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -8,6 +10,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Access(AccessType.PROPERTY)
@@ -22,12 +26,15 @@ public class IssueEntity implements java.io.Serializable {
 
 	private String status;
 	
+	private Date date;
+	
 	private int id;
 
-	public IssueEntity(String issue_k, String issue_s)
+	public IssueEntity(String issue_k, String issue_s, Date issue_d)
 	{
 		this.issue_key = issue_k;
 		this.status = issue_s;
+		this.date = issue_d;
 	}
 
 	public IssueEntity(){
@@ -61,6 +68,16 @@ public class IssueEntity implements java.io.Serializable {
 
 	public void setStatus(String issue_s) {
 		this.status = issue_s;
+	}
+	
+	@Temporal(TemporalType.DATE)
+	@Column(name="DATE")
+	public Date getDate(){
+		return date;
+	}
+	
+	public void setDate(Date s){
+		this.date = s;
 	}
 
 }

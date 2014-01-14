@@ -18,7 +18,7 @@ public class VerifiedLinksExtractor {
 	private String projectKey;
 	private LinkMap linksMap;
 	private int nbLines;
-	private ArrayList<String> bugIds;
+	private int max;
 
 	public VerifiedLinksExtractor(String key) {
 		projectKey = key;
@@ -31,13 +31,14 @@ public class VerifiedLinksExtractor {
 
 	private void extract() {
 		LinkMap links = new LinkMap();
-		bugIds = new ArrayList<String>();
+		max = 0;
+
 		String fileName = projectKey + "Links";
 		java.io.File linksFile = new java.io.File("resources/" + fileName);
 		//TODO Fix le chemin relatif du link
 		try {
 			//InputStream ips=new FileInputStream(linksFile.getAbsolutePath());
-			InputStream ips=new FileInputStream("/home/juliannos/per/fr.per.bugextraction/resources/XALANC-Links");
+			InputStream ips=new FileInputStream("/home/juliannos/per/fr.per.bugextraction/resources/OPENNLP-Links");
 			InputStreamReader ipsr=new InputStreamReader(ips);
 			BufferedReader br=new BufferedReader(ipsr);
 			String ligne;
@@ -49,14 +50,18 @@ public class VerifiedLinksExtractor {
 				
 				links.put(bug, commit);
 				updateMinMaxBugId(splitLine[BUG_COLUMN]);
-				bugIds.add(bug);
+				
+				int tmp = Integer.valueOf((bug.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)"))[1]);
+				if(max < tmp)
+					max = tmp;
+
 			}
 			br.close(); 
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		linksMap = links;
-		Collections.reverse(bugIds);
+		
 	}
 
 	public void updateMinMaxBugId(String bugKey) {
@@ -83,8 +88,9 @@ public class VerifiedLinksExtractor {
 		return nbLines;
 	}
 	
-	public ArrayList<String> getBugIds(){
-		return bugIds;
+	public int getMax(){
+		return max;
 	}
+	
 	
 }
