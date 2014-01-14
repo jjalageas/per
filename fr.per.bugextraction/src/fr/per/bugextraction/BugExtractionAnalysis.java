@@ -69,7 +69,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		issueList = new ArrayList<IssueEntity>();
 		int keyNumber = START_KEY_NB;
 
-		while(keyNumber < linkExtractor.getMax()){
+		while(keyNumber <= linkExtractor.getMax()){
 			Issue i = null;	
 			try {
 				i = jira.getIssue(PROJECT_KEY + keyNumber);
@@ -155,8 +155,6 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 		System.out.println("NUMBER OF BUGS IN THE DATABASE: " + issueList.size());
 		for (IssueEntity i : issueList) {
-			if(i.getDate()!=null)
-				System.out.println(i.getDate());
 			br.put(i.getIssue_key(), i.getDate());
 		}	
 
@@ -183,7 +181,6 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				
 				Date resolutionDate = bugReport.get(foundID);
 		        int diffInDays = (int) ((commitDate.getTime() - resolutionDate.getTime()) / (1000 * 60 * 60 * 24));
-		        System.out.println(diffInDays);
 		        
 		        if(Math.abs(diffInDays) <= 7){
 		        	System.out.println();
