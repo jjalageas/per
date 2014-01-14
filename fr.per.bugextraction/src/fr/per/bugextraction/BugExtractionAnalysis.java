@@ -24,13 +24,14 @@ import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
 
-	public static String PROJECT_KEY = "FELIX-";
+	public static String PROJECT_KEY = "XERCES-";
 	private static VerifiedLinksExtractor linkExtractor;
 	public static int START_KEY_NB = 0;
 	public static int truePositives = 0;
 	public static int falsePositives = 0;
 	public static int falseNegatives = 0;
 	public static int trueNegatives = 0;
+	public static int rejectedLinksCount = 0;
 	
 	public BugExtractionAnalysis() {
 		super();		
@@ -43,7 +44,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 	@Override
 	public void runOn(Source src) throws Exception {
 
-	    //extraction(src);
+	    extraction(src);
 		linkingAnalysis(src);
 
 	}
@@ -96,7 +97,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		for(IssueEntity ie : issueList)
 			dao.saveData(getPersitenceUnitName(), ie, src);
 		
-		System.out.println(issueList.size() + "Found");
+		System.out.println(issueList.size() + " Found");
 		System.out.println("Extraction Successful");
 	}
 
@@ -116,13 +117,13 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		for (Author auth : src.getAuthors()) {
 			for (int i=0; i<auth.getEvents().size(); i++){
 
-				nbCommit++;
 				String commitLog = auth.getEvents().get(i).getMetadata().get("commit_message");
 				Date commitDate = new Date(auth.getEvents().get(i).getTimestamp());
 				String commitID = auth.getEvents().get(i).getNativeId();
-				Date limitDate = new Date(2012,05,17,18,23,46);
+				Date limitDate = new Date(2012,04,23,12,45,00);
 				
 				if(commitDate.before(limitDate)){
+					nbCommit++;
 					ArrayList<String> link = compareLogToBugReport(commitLog, bugReport, PROJECT_KEY, commitDate, commitID, rejectedLinks);
 
 					if(link != null){
@@ -151,6 +152,15 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		System.out.println("Nombre de falseNegative : " + falseNegatives);
 		System.out.println("Nombre de falsePositive : " + falsePositives);
 		System.out.println("Nombre de trueNegative : " + trueNegatives);
+		
+		int precision = truePositives/(truePositives+falsePositives);
+		int recall = truePositives/(truePositives+falseNegatives);
+		int f_measure = (2*precision*recall)/(precision+recall);
+		
+		
+		System.out.println("Precision : " + precision);
+		System.out.println("Recall : " + recall);
+		System.out.println("F-Measure : " + f_measure);
 
 	}
 
@@ -199,12 +209,12 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		        	linkReport.add(foundID);
 		        }
 		        else{
-		        	trueNegatives++;
+		        	rejectedLinksCount++;
 		        	rejectedLinks.put(foundID, commitID);
 		        }
 			}
 			else{
-				trueNegatives++;
+				rejectedLinksCount++;
 				rejectedLinks.put(foundID, commitID);
 			}
 		}
@@ -254,7 +264,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 						falseNegatives++;
 		}
 		
-		trueNegatives -= falseNegatives;
+		trueNegatives = rejectedLinksCount - falseNegatives;
 		falsePositives = nbLinks - truePositives;
 
 	}
