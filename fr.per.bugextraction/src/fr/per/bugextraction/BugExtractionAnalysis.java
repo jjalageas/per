@@ -24,9 +24,9 @@ import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
 
-	public static String PROJECT_KEY = "OPENNLP-";
+	public static String PROJECT_KEY = "FELIX-";
 	private static VerifiedLinksExtractor linkExtractor;
-	public static int START_KEY_NB = 1;
+	public static int START_KEY_NB = 0;
 	public static int truePositives = 0;
 	public static int falsePositives = 0;
 	public static int falseNegatives = 0;
@@ -43,7 +43,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 	@Override
 	public void runOn(Source src) throws Exception {
 
-	    extraction(src);
+	    //extraction(src);
 		linkingAnalysis(src);
 
 	}
@@ -70,9 +70,14 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		int keyNumber = START_KEY_NB;
 
 		while(keyNumber <= linkExtractor.getMax()){
+			keyNumber++;
+			System.out.println(keyNumber);
+			System.out.println(linkExtractor.getMax());
 			Issue i = null;	
+			StringBuffer issueKey = new StringBuffer(PROJECT_KEY);
+            issueKey.append(keyNumber);
 			try {
-				i = jira.getIssue(PROJECT_KEY + keyNumber);
+				i = jira.getIssue(issueKey.toString());
 				String status = i.getStatus().toString();
 
 				
@@ -86,8 +91,6 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				e.printStackTrace();
 				continue;
 			}
-			System.out.println(keyNumber);
-			keyNumber++;
 		}
 		
 		for(IssueEntity ie : issueList)
@@ -97,44 +100,52 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		System.out.println("Extraction Successful");
 	}
 
+	@SuppressWarnings("deprecation")
 	public void linkingAnalysis(Source src){
 		
 		int nbCommit = 0;
 		int nbLink = 0;
 		Map<String, Date> bugReport  = fillBugReport(src);
+		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
 
 		ArrayList<String> links = new ArrayList<String>();
 		System.out.println("ANALYSIS STARTING:");
 		LinkMap foundLinks = new LinkMap();
-		
+		LinkMap rejectedLinks = new LinkMap();
+
 		for (Author auth : src.getAuthors()) {
 			for (int i=0; i<auth.getEvents().size(); i++){
-				
+
 				nbCommit++;
 				String commitLog = auth.getEvents().get(i).getMetadata().get("commit_message");
 				Date commitDate = new Date(auth.getEvents().get(i).getTimestamp());
-				ArrayList<String> link = compareLogToBugReport(commitLog, bugReport, PROJECT_KEY, commitDate);
+				String commitID = auth.getEvents().get(i).getNativeId();
+				Date limitDate = new Date(2012,05,17,18,23,46);
 				
-				if(link != null){
-					for(String l: link){
-						String commit = auth.getEvents().get(i).getNativeId();
-						foundLinks.put(l, commit);
-						String linkDisplay = "Commit " + commit
-								+" linked to bug " + l;
-						links.add(linkDisplay);
-					}			
+				if(commitDate.before(limitDate)){
+					ArrayList<String> link = compareLogToBugReport(commitLog, bugReport, PROJECT_KEY, commitDate, commitID, rejectedLinks);
+
+					if(link != null){
+						for(String l: link){;
+							foundLinks.put(l, commitID);
+							String linkDisplay = "Commit " + commitID
+									+" linked to bug " + l;
+							links.add(linkDisplay);
+						}			
+					}
 				}
 			}
 		}
-		checkLinks(foundLinks, links.size(), linkExtractor.getLinksMap());
-		nbLink = links.size();
 		
+		checkLinks(foundLinks, links.size(), linkExtractor.getLinksMap(), rejectedLinks);
+		nbLink = links.size();
+
 		for(String s: links)
 			System.out.println(s);
 		System.out.println();
 		
-		
-		System.out.println("Nombre de links : " + nbLink);
+		System.out.println("Nombre de links du benchmark: " + linkExtractor.getNbLines());
+		System.out.println("Nombre de links validés: " + nbLink);
 		System.out.println("Nombre de commits : " + nbCommit);
 		System.out.println("Nombre de truePositives : " + truePositives);
 		System.out.println("Nombre de falseNegative : " + falseNegatives);
@@ -169,7 +180,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 	
 	
 	public ArrayList<String> compareLogToBugReport(String commitLog, Map<String, Date> bugReport, 
-			String pk, Date commitDate){
+			String pk, Date commitDate, String commitID, LinkMap rejectedLinks){
 		
 		ArrayList<String> linkReport = new ArrayList<String>();
 		Pattern pattern = Pattern.compile(pk + "(\\d)*");
@@ -187,9 +198,15 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		        	System.out.println("Found Bug ID : " + foundID);
 		        	linkReport.add(foundID);
 		        }
-		        else
+		        else{
 		        	trueNegatives++;
-			}			
+		        	rejectedLinks.put(foundID, commitID);
+		        }
+			}
+			else{
+				trueNegatives++;
+				rejectedLinks.put(foundID, commitID);
+			}
 		}
 		return linkReport;
 	}
@@ -216,30 +233,29 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 	
 	
 	
-	@SuppressWarnings("unchecked")
-	public static void checkLinks(LinkMap links, int nbLinks, LinkMap verifiedLinksMap) {
+	public static void checkLinks(LinkMap links, int nbLinks, LinkMap verifiedLinksMap, LinkMap rejectedLinks) {
 		
 		LinkMap verifiedLinks = verifiedLinksMap;
 		
 		for (Map.Entry<String, List<String>> entry : links.getLinksMap().entrySet())
 		{
-			String bugKey = entry.getKey();
 			if(verifiedLinks.containsKey(entry.getKey())) {
 				for(String commit : entry.getValue())
 					if(verifiedLinks.valueContains(entry.getKey(), commit))
 						truePositives++;
-					else
-						falsePositives++;
-				List<String> verifiedCommits = (List<String>) verifiedLinks.get(bugKey);
-				int nbVerifiedCommits = verifiedCommits.size();
-				int nbCommits = entry.getValue().size();
-				falseNegatives += nbVerifiedCommits > nbCommits ? nbVerifiedCommits - nbCommits : 0;
 			}
-			else
-				falsePositives++;
 		}
+		
+		for (Map.Entry<String, List<String>> entry : rejectedLinks.getLinksMap().entrySet())
+		{
+			if(verifiedLinks.containsKey(entry.getKey()))
+				for(String commit : entry.getValue())
+					if(verifiedLinks.valueContains(entry.getKey(), commit))
+						falseNegatives++;
+		}
+		
 		trueNegatives -= falseNegatives;
-
+		falsePositives = nbLinks - truePositives;
 
 	}
 }
