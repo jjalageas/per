@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
 
 
 
@@ -34,11 +32,8 @@ public class VerifiedLinksExtractor {
 		max = 0;
 
 		String fileName = projectKey + "Links";
-		java.io.File linksFile = new java.io.File("resources/" + fileName);
-		//TODO Fix le chemin relatif du link
 		try {
-			//InputStream ips=new FileInputStream(linksFile.getAbsolutePath());
-			InputStream ips=new FileInputStream("/home/juliannos/per/fr.per.bugextraction/resources/OPENNLP-Links");
+			InputStream ips=new FileInputStream("/home/juliannos/per/fr.per.bugextraction/resources/"+fileName);
 			InputStreamReader ipsr=new InputStreamReader(ips);
 			BufferedReader br=new BufferedReader(ipsr);
 			String ligne;

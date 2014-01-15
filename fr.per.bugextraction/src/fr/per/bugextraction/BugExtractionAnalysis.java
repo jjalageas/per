@@ -24,7 +24,7 @@ import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
 
-	public static String PROJECT_KEY = "XERCES-";
+	public static String PROJECT_KEY = "XERCESC-";
 	private static VerifiedLinksExtractor linkExtractor;
 	public static int START_KEY_NB = 0;
 	public static int truePositives = 0;
@@ -32,6 +32,8 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 	public static int falseNegatives = 0;
 	public static int trueNegatives = 0;
 	public static int rejectedLinksCount = 0;
+	public static int rejectedLinksTimeCoherence = 0;
+	public static int rejectedLinksReferenceCoherence = 0;
 	
 	public BugExtractionAnalysis() {
 		super();		
@@ -49,7 +51,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 	}
 
-	public void extraction(Source src){
+	public void extraction(Source src) throws MalformedURLException{
 		Jira jira = null;
 		List<IssueEntity> issueList = null;
 		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
@@ -70,8 +72,9 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		issueList = new ArrayList<IssueEntity>();
 		int keyNumber = START_KEY_NB;
 
-		while(keyNumber <= linkExtractor.getMax()){
+		while(keyNumber < linkExtractor.getMax()){
 			keyNumber++;
+
 			System.out.println(keyNumber);
 			System.out.println(linkExtractor.getMax());
 			Issue i = null;	
@@ -147,20 +150,26 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		
 		System.out.println("Nombre de links du benchmark: " + linkExtractor.getNbLines());
 		System.out.println("Nombre de links validés: " + nbLink);
+		System.out.println("Nombre de links rejetés: " + rejectedLinksCount);
+		System.out.println("Nombre de links rejetés pour cause d'incohérence temporelle: " + rejectedLinksTimeCoherence);
+		System.out.println("Nombre de links rejetés pour cause de reference non trouvée: " + rejectedLinksReferenceCoherence);
 		System.out.println("Nombre de commits : " + nbCommit);
+		
+		System.out.println();
 		System.out.println("Nombre de truePositives : " + truePositives);
 		System.out.println("Nombre de falseNegative : " + falseNegatives);
 		System.out.println("Nombre de falsePositive : " + falsePositives);
 		System.out.println("Nombre de trueNegative : " + trueNegatives);
 		
-		int precision = truePositives/(truePositives+falsePositives);
-		int recall = truePositives/(truePositives+falseNegatives);
-		int f_measure = (2*precision*recall)/(precision+recall);
+		float precision = (float)truePositives/((float)truePositives+(float)falsePositives);
+		float recall = (float)truePositives/((float)truePositives+(float)falseNegatives);
+		float f_measure = ((float)2*(float)precision*(float)recall)/((float)precision+(float)recall);
 		
-		
+		System.out.println();
 		System.out.println("Precision : " + precision);
 		System.out.println("Recall : " + recall);
 		System.out.println("F-Measure : " + f_measure);
+		System.out.println();
 
 	}
 
@@ -209,12 +218,12 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		        	linkReport.add(foundID);
 		        }
 		        else{
-		        	rejectedLinksCount++;
+		        	rejectedLinksTimeCoherence++;
 		        	rejectedLinks.put(foundID, commitID);
 		        }
 			}
 			else{
-				rejectedLinksCount++;
+				rejectedLinksReferenceCoherence++;
 				rejectedLinks.put(foundID, commitID);
 			}
 		}
@@ -264,6 +273,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 						falseNegatives++;
 		}
 		
+		rejectedLinksCount = rejectedLinksTimeCoherence + rejectedLinksReferenceCoherence;
 		trueNegatives = rejectedLinksCount - falseNegatives;
 		falsePositives = nbLinks - truePositives;
 

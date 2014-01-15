@@ -12,7 +12,7 @@
 
 "url":"http://svn.apache.org/repos/asf/struts/struts1/trunk"
 		"class":"SvnKitSourceExtractor"
-		//date last commit = Date limitDate = new Date(2009,9,18,06,09,00);
+		//date last commit = Date limitDate = new Date(2009,9,18,06,9,00);
 
 "url":"http://svn.apache.org/repos/asf/hadoop/common/trunk/"
 		"class":"SvnKitSourceExtractor"
@@ -28,7 +28,7 @@
 
 "url":"http://svn.apache.org/repos/asf/stdcxx/trunk/"
 		"class":"SvnKitSourceExtractor"
-		//date last commit =Date limitDate = new Date(2012,01,18,19,06,00);
+		//date last commit = Date limitDate = new Date(2012,01,18,19,06,00);
 
 "url":"http://svn.apache.org/repos/asf/xalan/c/trunk/"
 		"class":"SvnKitSourceExtractor"
