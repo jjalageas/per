@@ -24,16 +24,16 @@ import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
 
-	public static String PROJECT_KEY = "XERCESC-";
+	public static String PROJECT_KEY = "FELIX-";
 	private static VerifiedLinksExtractor linkExtractor;
 	public static int START_KEY_NB = 0;
 	public static int truePositives = 0;
 	public static int falsePositives = 0;
 	public static int falseNegatives = 0;
-	public static int trueNegatives = 0;
-	public static int rejectedLinksCount = 0;
-	public static int rejectedLinksTimeCoherence = 0;
-	public static int rejectedLinksReferenceCoherence = 0;
+	public static int timeRequirement = 7;
+	public static float precision = 0;
+	public static float recall = 0;
+	public static float f_measure = 0;
 	
 	public BugExtractionAnalysis() {
 		super();		
@@ -45,10 +45,8 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 	@Override
 	public void runOn(Source src) throws Exception {
-
-	    extraction(src);
+		//extraction(src);
 		linkingAnalysis(src);
-
 	}
 
 	public void extraction(Source src) throws MalformedURLException{
@@ -123,7 +121,17 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				String commitLog = auth.getEvents().get(i).getMetadata().get("commit_message");
 				Date commitDate = new Date(auth.getEvents().get(i).getTimestamp());
 				String commitID = auth.getEvents().get(i).getNativeId();
-				Date limitDate = new Date(2012,04,23,12,45,00);
+				//Xerces Date limitDate = new Date(2012,04,23,12,45,00);
+				//Stdcxx Date limitDate = new Date(2012,01,18,19,06,00);
+				//Opennlp Date limitDate = new Date(2012,04,20,14,23,00);
+				//Lucene Date limitDate = new Date(2012,05,07,11,03,00);
+				//ActiveMq Date limitDate = new Date(2012,05,9,20,06,00);
+				//Mahout Date limitDate = new Date(2012,05,10,19,44,00);
+				//Felix 
+				Date limitDate = new Date(2012,05,17,18,24,00);
+				//Hadoop Date limitDate = new Date(2012,05,12,06,04,00);
+				//Struts Date limitDate = new Date(2009,9,18,06,9,00);
+				//Xalan Date limitDate = new Date(2011,11,07,18,35,00);
 				
 				if(commitDate.before(limitDate)){
 					nbCommit++;
@@ -144,30 +152,30 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		checkLinks(foundLinks, links.size(), linkExtractor.getLinksMap(), rejectedLinks);
 		nbLink = links.size();
 
-		for(String s: links)
-			System.out.println(s);
+		//for(String s: links)
+			//System.out.println(s);
 		System.out.println();
 		
+		System.out.println("Time Requirement: " + timeRequirement);
 		System.out.println("Nombre de links du benchmark: " + linkExtractor.getNbLines());
 		System.out.println("Nombre de links validés: " + nbLink);
-		System.out.println("Nombre de links rejetés: " + rejectedLinksCount);
-		System.out.println("Nombre de links rejetés pour cause d'incohérence temporelle: " + rejectedLinksTimeCoherence);
-		System.out.println("Nombre de links rejetés pour cause de reference non trouvée: " + rejectedLinksReferenceCoherence);
-		System.out.println("Nombre de commits : " + nbCommit);
+		System.out.println("Nombre de commits: " + nbCommit);
 		
 		System.out.println();
-		System.out.println("Nombre de truePositives : " + truePositives);
-		System.out.println("Nombre de falseNegative : " + falseNegatives);
-		System.out.println("Nombre de falsePositive : " + falsePositives);
-		System.out.println("Nombre de trueNegative : " + trueNegatives);
+		System.out.println("Nombre de truePositives: " + truePositives);
+		System.out.println("Nombre de falseNegative: " + (linkExtractor.getNbLines() - truePositives));
+		System.out.println("Nombre de falsePositive: " + falsePositives);
 		
-		float precision = (float)truePositives/((float)truePositives+(float)falsePositives);
-		float recall = (float)truePositives/((float)truePositives+(float)falseNegatives);
-		float f_measure = ((float)2*(float)precision*(float)recall)/((float)precision+(float)recall);
+		System.out.println("Nombre de false negative2: " + (linkExtractor.getNbLines() - truePositives));
+		float false_negatives = linkExtractor.getNbLines() - truePositives;
+		precision = (float)truePositives/((float)truePositives+(float)falsePositives);
+		recall = (float)truePositives/((float)truePositives+(float)false_negatives);
+		f_measure = ((float)2*(float)precision*(float)recall)/((float)precision+(float)recall);
+
 		
 		System.out.println();
 		System.out.println("Precision : " + precision);
-		System.out.println("Recall : " + recall);
+		System.out.println("Recall2 : " + recall);
 		System.out.println("F-Measure : " + f_measure);
 		System.out.println();
 
@@ -183,14 +191,14 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 		issueList = dao.getData(getPersitenceUnitName(), IssueEntity.class, src);
 
-		System.out.println("NUMBER OF BUGS IN THE DATABASE: " + issueList.size());
+		//System.out.println("NUMBER OF BUGS IN THE DATABASE: " + issueList.size());
 		for (IssueEntity i : issueList) {
 			br.put(i.getIssue_key(), i.getDate());
 		}	
 
 		Set<Entry<String,Date>> set = br.entrySet();
-		for(Entry<String,Date> ent : set)
-			System.out.println("Issue key: "+ent.getKey());
+		//for(Entry<String,Date> ent : set)
+		//	System.out.println("Issue key: "+ent.getKey());
 
 		return (HashMap<String, Date>) br;
 	}
@@ -209,22 +217,16 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			String foundID = matcher.group();
 			if (bugReport.containsKey(foundID)){
 				
-				Date resolutionDate = bugReport.get(foundID);
-		        int diffInDays = (int) ((commitDate.getTime() - resolutionDate.getTime()) / (1000 * 60 * 60 * 24));
+				//Date resolutionDate = bugReport.get(foundID);
+		       // int diffInDays = (int) ((commitDate.getTime() - resolutionDate.getTime()) / (1000 * 60 * 60 * 24));
 		        
-		        if(Math.abs(diffInDays) <= 7){
-		        	System.out.println();
-		        	System.out.println("Found Bug ID : " + foundID);
+		      //  if(Math.abs(diffInDays) <= timeRequirement){
+		        //	System.out.println();
+		        	//System.out.println("Found Bug ID : " + foundID);
 		        	linkReport.add(foundID);
-		        }
-		        else{
-		        	rejectedLinksTimeCoherence++;
-		        	rejectedLinks.put(foundID, commitID);
-		        }
-			}
-			else{
-				rejectedLinksReferenceCoherence++;
-				rejectedLinks.put(foundID, commitID);
+		      //  }
+		        	//}
+
 			}
 		}
 		return linkReport;
@@ -273,10 +275,8 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 						falseNegatives++;
 		}
 		
-		rejectedLinksCount = rejectedLinksTimeCoherence + rejectedLinksReferenceCoherence;
-		trueNegatives = rejectedLinksCount - falseNegatives;
 		falsePositives = nbLinks - truePositives;
-
+		
 	}
 }
 
