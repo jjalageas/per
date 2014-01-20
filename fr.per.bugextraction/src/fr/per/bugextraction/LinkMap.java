@@ -1,17 +1,16 @@
 package fr.per.bugextraction;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class LinkMap implements Map{
-	private Map<String, List<String>> linksMap;
+	private Map<String, Set<String>> linksMap;
 
 	public LinkMap(){
-		linksMap = new HashMap<String, List<String>>();
+		linksMap = new HashMap<String, Set<String>>();
 	}
 	
 	@Override
@@ -44,9 +43,9 @@ public class LinkMap implements Map{
 		if (linksMap.containsKey(key))
 			linksMap.get(key).add((String) value);
 		else {
-			List<String> newList = new ArrayList<>();
-			newList.add((String)value);
-			linksMap.put((String)key, newList); 
+			Set<String> newSet = new HashSet<>();
+			newSet.add((String)value);
+			linksMap.put((String)key, newSet); 
 		}
 		return value;
 	}
@@ -85,7 +84,7 @@ public class LinkMap implements Map{
 		return linksMap.get(key).contains(singleValue);
 	}
 
-	public Map<String, List<String>> getLinksMap() {
+	public Map<String, Set<String>> getLinksMap() {
 		return linksMap;
 	}
 	

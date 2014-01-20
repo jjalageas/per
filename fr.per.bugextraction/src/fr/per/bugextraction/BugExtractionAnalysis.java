@@ -24,7 +24,7 @@ import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
 
-	public static String PROJECT_KEY = "FELIX-";
+	public static String PROJECT_KEY = "XERCESC-";
 	private static VerifiedLinksExtractor linkExtractor;
 	public static int START_KEY_NB = 0;
 	public static int truePositives = 0;
@@ -121,17 +121,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 				String commitLog = auth.getEvents().get(i).getMetadata().get("commit_message");
 				Date commitDate = new Date(auth.getEvents().get(i).getTimestamp());
 				String commitID = auth.getEvents().get(i).getNativeId();
-				//Xerces Date limitDate = new Date(2012,04,23,12,45,00);
-				//Stdcxx Date limitDate = new Date(2012,01,18,19,06,00);
-				//Opennlp Date limitDate = new Date(2012,04,20,14,23,00);
-				//Lucene Date limitDate = new Date(2012,05,07,11,03,00);
-				//ActiveMq Date limitDate = new Date(2012,05,9,20,06,00);
-				//Mahout Date limitDate = new Date(2012,05,10,19,44,00);
-				//Felix 
-				Date limitDate = new Date(2012,05,17,18,24,00);
-				//Hadoop Date limitDate = new Date(2012,05,12,06,04,00);
-				//Struts Date limitDate = new Date(2009,9,18,06,9,00);
-				//Xalan Date limitDate = new Date(2011,11,07,18,35,00);
+				Date limitDate = linkExtractor.getDatesMap().get(PROJECT_KEY);
 				
 				if(commitDate.before(limitDate)){
 					nbCommit++;
@@ -149,7 +139,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			}
 		}
 		
-		checkLinks(foundLinks, links.size(), linkExtractor.getLinksMap(), rejectedLinks);
+		checkLinks(foundLinks, links.size(), linkExtractor.getLinksMap());
 		nbLink = links.size();
 
 		//for(String s: links)
@@ -163,8 +153,10 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		
 		System.out.println();
 		System.out.println("Nombre de truePositives: " + truePositives);
-		System.out.println("Nombre de falseNegative: " + (linkExtractor.getNbLines() - truePositives));
+		falseNegatives = linkExtractor.getNbLines() - truePositives;
+		System.out.println("Nombre de falseNegative: " + falseNegatives);
 		System.out.println("Nombre de falsePositive: " + falsePositives);
+		CsvWriter.exportLinkResults(PROJECT_KEY, truePositives, falseNegatives, falsePositives, "linkResults.csv");
 		
 		System.out.println("Nombre de false negative2: " + (linkExtractor.getNbLines() - truePositives));
 		float false_negatives = linkExtractor.getNbLines() - truePositives;
@@ -178,7 +170,7 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		System.out.println("Recall2 : " + recall);
 		System.out.println("F-Measure : " + f_measure);
 		System.out.println();
-
+		CsvWriter.exportStatsResults(PROJECT_KEY, precision, recall, f_measure, "statsResults.csv");
 	}
 
 	
@@ -210,11 +202,12 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 			String pk, Date commitDate, String commitID, LinkMap rejectedLinks){
 		
 		ArrayList<String> linkReport = new ArrayList<String>();
-		Pattern pattern = Pattern.compile(pk + "(\\d)*");
+		Pattern pattern = Pattern.compile("(\\w)+" + "-" + "(\\d)+");
 		Matcher matcher = pattern.matcher(commitLog);
 
 		while (matcher.find()) {
-			String foundID = matcher.group();
+			String foundID = matcher.group().toUpperCase();
+			//System.out.println("found ID : " + foundID);
 			if (bugReport.containsKey(foundID)){
 				
 				//Date resolutionDate = bugReport.get(foundID);
@@ -254,27 +247,31 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 	
 	
 	
-	public static void checkLinks(LinkMap links, int nbLinks, LinkMap verifiedLinksMap, LinkMap rejectedLinks) {
+	public static void checkLinks(LinkMap links, int nbLinks, LinkMap verifiedLinksMap) {
 		
 		LinkMap verifiedLinks = verifiedLinksMap;
 		
-		for (Map.Entry<String, List<String>> entry : links.getLinksMap().entrySet())
+		for (Map.Entry<String, Set<String>> entry : links.getLinksMap().entrySet())
 		{
 			if(verifiedLinks.containsKey(entry.getKey())) {
 				for(String commit : entry.getValue())
 					if(verifiedLinks.valueContains(entry.getKey(), commit))
 						truePositives++;
+					else
+						System.out.println("Bad Link between bug : " + entry.getKey() + "and commit : " + commit);
 			}
+			else
+				System.out.println("Bad Link between bug : " + entry.getKey() + "and commit : " + entry.getValue());
 		}
 		
-		for (Map.Entry<String, List<String>> entry : rejectedLinks.getLinksMap().entrySet())
-		{
-			if(verifiedLinks.containsKey(entry.getKey()))
-				for(String commit : entry.getValue())
-					if(verifiedLinks.valueContains(entry.getKey(), commit))
-						falseNegatives++;
-		}
-		
+//		for (Map.Entry<String, List<String>> entry : rejectedLinks.getLinksMap().entrySet())
+//		{
+//			if(verifiedLinks.containsKey(entry.getKey()))
+//				for(String commit : entry.getValue())
+//					if(verifiedLinks.valueContains(entry.getKey(), commit))
+//						falseNegatives++;
+//		}
+//		
 		falsePositives = nbLinks - truePositives;
 		
 	}

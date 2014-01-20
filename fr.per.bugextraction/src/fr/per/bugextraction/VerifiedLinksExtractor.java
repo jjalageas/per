@@ -4,11 +4,15 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 
 public class VerifiedLinksExtractor {
-
+	
+	private Map<String, Date> datesMap; 
 	private static final int BUG_COLUMN = 0;
 	private static final int COMMIT_COLUMN = 1;
 	private int minBugId;
@@ -24,16 +28,18 @@ public class VerifiedLinksExtractor {
 		minBugId = Integer.MAX_VALUE;
 		nbLines = 0;
 		extract();
+		fillDatesMap();
 	}
 
 
+	
 	private void extract() {
 		LinkMap links = new LinkMap();
 		max = 0;
 
 		String fileName = projectKey + "Links";
 		try {
-			InputStream ips=new FileInputStream("/home/juliannos/per/fr.per.bugextraction/resources/"+fileName);
+			InputStream ips=new FileInputStream("/home/guiiii/git/per/fr.per.bugextraction/resources/"+fileName);
 			InputStreamReader ipsr=new InputStreamReader(ips);
 			BufferedReader br=new BufferedReader(ipsr);
 			String ligne;
@@ -57,6 +63,21 @@ public class VerifiedLinksExtractor {
 		}
 		linksMap = links;
 		
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void fillDatesMap() {
+		datesMap = new HashMap<String, Date>();
+		
+		datesMap.put("XERCESC-", new Date(2012,04,23,12,45,00));
+		datesMap.put("STDCXX-", new Date(2012,01,18,19,06,00));
+		datesMap.put("OPENNLP-", new Date(2012,04,20,14,23,00));
+		datesMap.put("LUCENE-", new Date(2012,05,07,11,03,00));
+		datesMap.put("AMQ-", new Date(2012,05,9,20,06,00));
+		datesMap.put("MAHOUT-", new Date(2012,05,10,19,44,00));
+		datesMap.put("HADOOP-", new Date(2012,05,12,06,04,00));
+		datesMap.put("STR-", new Date(2009,9,18,06,9,00));
+		datesMap.put("XALANC-", new Date(2011,11,07,18,35,00));
 	}
 
 	public void updateMinMaxBugId(String bugKey) {
@@ -87,5 +108,7 @@ public class VerifiedLinksExtractor {
 		return max;
 	}
 	
-	
+	public Map<String, Date> getDatesMap() {
+		return datesMap;
+	}
 }
