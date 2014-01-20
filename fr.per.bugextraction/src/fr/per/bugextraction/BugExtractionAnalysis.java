@@ -2,6 +2,7 @@ package fr.per.bugextraction;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,8 +16,6 @@ import java.util.regex.Pattern;
 import org.codehaus.swizzle.jira.Issue;
 import org.codehaus.swizzle.jira.Jira;
 
-import com.sun.org.apache.xpath.internal.FoundIndex;
-
 import fr.labri.harmony.core.analysis.AbstractAnalysis;
 import fr.labri.harmony.core.config.model.AnalysisConfiguration;
 import fr.labri.harmony.core.dao.Dao;
@@ -25,11 +24,16 @@ import fr.labri.harmony.core.model.Source;
 
 public class BugExtractionAnalysis extends AbstractAnalysis{
 
-	public static String PROJECT_KEY = "AMQ-";
+	public static String PROJECT_KEY = "FELIX-";
 	private static VerifiedLinksExtractor linkExtractor;
+	public static int START_KEY_NB = 0;
 	public static int truePositives = 0;
 	public static int falsePositives = 0;
 	public static int falseNegatives = 0;
+	public static int timeRequirement = 7;
+	public static float precision = 0;
+	public static float recall = 0;
+	public static float f_measure = 0;
 	
 	public BugExtractionAnalysis() {
 		super();		
@@ -41,120 +45,170 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 
 	@Override
 	public void runOn(Source src) throws Exception {
-		
 		//extraction(src);
 		linkingAnalysis(src);
 	}
 
-	public void extraction(Source src){
+	public void extraction(Source src) throws MalformedURLException{
 		Jira jira = null;
 		List<IssueEntity> issueList = null;
+		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
 
 		try {
 			jira = new Jira("https://issues.apache.org/jira/rpc/xmlrpc");
 
 		} catch (MalformedURLException e1) {
-			System.err.println("Mauvaise addresse de repository");
+			System.err.println("Invalid repository address");
 			e1.printStackTrace();
 		}
 		try {
 			jira.login("gmeral", "harmony");
 		} catch (Exception e) {
-			System.err.println("Mauvais login");			
+			System.err.println("Invalid login");			
 			e.printStackTrace();
 		}
 		issueList = new ArrayList<IssueEntity>();
-		//TODO remplacer le test par les min et max de VerifiedLinksExtractor
-		int issuecount = 1109;
-		while(issuecount < 1114) {
-			Issue i = null;
-			issuecount ++;
+		int keyNumber = START_KEY_NB;
+
+		while(keyNumber < linkExtractor.getMax()){
+			keyNumber++;
+
+			System.out.println(keyNumber);
+			System.out.println(linkExtractor.getMax());
+			Issue i = null;	
 			StringBuffer issueKey = new StringBuffer(PROJECT_KEY);
-			issueKey.append(issuecount);
+            issueKey.append(keyNumber);
 			try {
 				i = jira.getIssue(issueKey.toString());
-				if(i != null)
+				String status = i.getStatus().toString();
+
+				
+				if(i != null && (status.equals("Resolved") || status.equals("Closed") || status.equals("Reopened")))
 				{
-					IssueEntity ie = new IssueEntity(i.getKey(), i.getStatus().toString());
+					IssueEntity ie = new IssueEntity(i.getKey(), i.getStatus().toString(), i.getUpdated());
 					issueList.add(ie);
+	
 				}
 			}catch(Exception e) {
 				e.printStackTrace();
 				continue;
 			}
-			System.out.println(issuecount);
 		}
+		
 		for(IssueEntity ie : issueList)
 			dao.saveData(getPersitenceUnitName(), ie, src);
-		System.out.println("Nombre de bugs trouvés : " + issuecount);
-		System.out.println("Extraction Reussie");
+		
+		System.out.println(issueList.size() + " Found");
+		System.out.println("Extraction Successful");
 	}
 
+	@SuppressWarnings("deprecation")
 	public void linkingAnalysis(Source src){
-		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
+		
 		int nbCommit = 0;
 		int nbLink = 0;
-		Map<String, String> bugReport  = fillBugReport(src);
+		Map<String, Date> bugReport  = fillBugReport(src);
+		linkExtractor = new VerifiedLinksExtractor(PROJECT_KEY);
 
 		ArrayList<String> links = new ArrayList<String>();
-		System.out.println("DEBUT DE LANALYSE:");
+		System.out.println("ANALYSIS STARTING:");
 		LinkMap foundLinks = new LinkMap();
+		LinkMap rejectedLinks = new LinkMap();
+
 		for (Author auth : src.getAuthors()) {
 			for (int i=0; i<auth.getEvents().size(); i++){
-				nbCommit++;
+
 				String commitLog = auth.getEvents().get(i).getMetadata().get("commit_message");
-				//System.out.println(commitLog);
-				//link search
-				ArrayList<String> link = compareLogToBugReport(commitLog, bugReport, PROJECT_KEY);
-				if(link.size() > 0){
-					for(String l: link){
-						String commit = auth.getEvents().get(i).getNativeId();
-						foundLinks.put(l, commit);
-						String linkDisplay = "Commit " + commit
-								+" linked to bug " + l;
-						links.add(linkDisplay);
-					}			
+				Date commitDate = new Date(auth.getEvents().get(i).getTimestamp());
+				String commitID = auth.getEvents().get(i).getNativeId();
+				//Xerces Date limitDate = new Date(2012,04,23,12,45,00);
+				//Stdcxx Date limitDate = new Date(2012,01,18,19,06,00);
+				//Opennlp Date limitDate = new Date(2012,04,20,14,23,00);
+				//Lucene Date limitDate = new Date(2012,05,07,11,03,00);
+				//ActiveMq Date limitDate = new Date(2012,05,9,20,06,00);
+				//Mahout Date limitDate = new Date(2012,05,10,19,44,00);
+				//Felix 
+				Date limitDate = new Date(2012,05,17,18,24,00);
+				//Hadoop Date limitDate = new Date(2012,05,12,06,04,00);
+				//Struts Date limitDate = new Date(2009,9,18,06,9,00);
+				//Xalan Date limitDate = new Date(2011,11,07,18,35,00);
+				
+				if(commitDate.before(limitDate)){
+					nbCommit++;
+					ArrayList<String> link = compareLogToBugReport(commitLog, bugReport, PROJECT_KEY, commitDate, commitID, rejectedLinks);
+
+					if(link != null){
+						for(String l: link){;
+							foundLinks.put(l, commitID);
+							String linkDisplay = "Commit " + commitID
+									+" linked to bug " + l;
+							links.add(linkDisplay);
+						}			
+					}
 				}
 			}
 		}
-		checkLinks(foundLinks);
-		nbLink = links.size();
 		
-		for(String s: links)
-			System.out.println(s);
+		checkLinks(foundLinks, links.size(), linkExtractor.getLinksMap(), rejectedLinks);
+		nbLink = links.size();
+
+		//for(String s: links)
+			//System.out.println(s);
 		System.out.println();
 		
+		System.out.println("Time Requirement: " + timeRequirement);
+		System.out.println("Nombre de links du benchmark: " + linkExtractor.getNbLines());
+		System.out.println("Nombre de links validés: " + nbLink);
+		System.out.println("Nombre de commits: " + nbCommit);
 		
-		System.out.println("Nombre de links : " + nbLink);
-		System.out.println("Nombre de commits : " + nbCommit);
-		System.out.println("Nombre de truePositives : " + truePositives);
-		System.out.println("Nombre de falseNegative : " + falseNegatives);
-		System.out.println("Nombre de falsePositive : " + falsePositives);
-	
+		System.out.println();
+		System.out.println("Nombre de truePositives: " + truePositives);
+		System.out.println("Nombre de falseNegative: " + (linkExtractor.getNbLines() - truePositives));
+		System.out.println("Nombre de falsePositive: " + falsePositives);
+		
+		System.out.println("Nombre de false negative2: " + (linkExtractor.getNbLines() - truePositives));
+		float false_negatives = linkExtractor.getNbLines() - truePositives;
+		precision = (float)truePositives/((float)truePositives+(float)falsePositives);
+		recall = (float)truePositives/((float)truePositives+(float)false_negatives);
+		f_measure = ((float)2*(float)precision*(float)recall)/((float)precision+(float)recall);
+
+		
+		System.out.println();
+		System.out.println("Precision : " + precision);
+		System.out.println("Recall2 : " + recall);
+		System.out.println("F-Measure : " + f_measure);
+		System.out.println();
 
 	}
 
-	public HashMap<String, String> fillBugReport(Source src){
+	
+	
+	
+	public HashMap<String, Date> fillBugReport(Source src){
 		List<IssueEntity> issueList = null;
-		Map<String, String> br = new HashMap<String, String>();
+		Map<String, Date> br = new HashMap<String, Date>();
+		
 
 		issueList = dao.getData(getPersitenceUnitName(), IssueEntity.class, src);
 
-		System.out.println("NOMBRE DE BUGS DANS LA DB: " + issueList.size());
+		//System.out.println("NUMBER OF BUGS IN THE DATABASE: " + issueList.size());
 		for (IssueEntity i : issueList) {
-			br.put(i.getIssue_key(), i.getStatus());
+			br.put(i.getIssue_key(), i.getDate());
 		}	
 
-		Set<Entry<String,String>> set = br.entrySet();
-		for(Entry<String,String> ent : set)
-			System.out.println("Issue key: "+ent.getKey());
+		Set<Entry<String,Date>> set = br.entrySet();
+		//for(Entry<String,Date> ent : set)
+		//	System.out.println("Issue key: "+ent.getKey());
 
-		return (HashMap<String, String>) br;
+		return (HashMap<String, Date>) br;
 	}
 
-	public ArrayList<String> compareLogToBugReport(String commitLog, Map<String, String> bugReport, 
-			String pk){
-
+	
+	
+	
+	public ArrayList<String> compareLogToBugReport(String commitLog, Map<String, Date> bugReport, 
+			String pk, Date commitDate, String commitID, LinkMap rejectedLinks){
+		
 		ArrayList<String> linkReport = new ArrayList<String>();
 		Pattern pattern = Pattern.compile(pk + "(\\d)*");
 		Matcher matcher = pattern.matcher(commitLog);
@@ -162,13 +216,26 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		while (matcher.find()) {
 			String foundID = matcher.group();
 			if (bugReport.containsKey(foundID)){
-				System.out.println("Id bug trouve : " + foundID);
-				linkReport.add(foundID);
+				
+				//Date resolutionDate = bugReport.get(foundID);
+		       // int diffInDays = (int) ((commitDate.getTime() - resolutionDate.getTime()) / (1000 * 60 * 60 * 24));
+		        
+		      //  if(Math.abs(diffInDays) <= timeRequirement){
+		        //	System.out.println();
+		        	//System.out.println("Found Bug ID : " + foundID);
+		        	linkReport.add(foundID);
+		      //  }
+		        	//}
+
 			}
 		}
 		return linkReport;
 	}
 
+	
+	
+	
+	@SuppressWarnings("unused")
 	public static void dumpDatabase(String db) {
 		//TODO fix le path relatif du dump
 		Runtime r = Runtime.getRuntime();
@@ -177,32 +244,39 @@ public class BugExtractionAnalysis extends AbstractAnalysis{
 		java.io.File linksFile = new java.io.File("resources/" + fileName);
 		//ProcessBuilder pb = new ProcessBuilder("mysqldump --opt -h localhost -u root -p pchanson > cleanActiveMQ.sql");
 		try {
-			p = r.exec("mysqldump --opt -h localhost -u root --password=harmony" + db + " > " + linksFile.getAbsolutePath());
+			p = r.exec("mysqldump --opt -h localhost -u root --password=pepsi718" + db + " > " + linksFile.getAbsolutePath());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		System.out.println("Dump Terminé : fichier dump accessible à : \n" + linksFile.getAbsolutePath());
 	}
 
-	public static void checkLinks(LinkMap links) {
-		LinkMap verifiedLinks = linkExtractor.getLinksMap();
+	
+	
+	
+	public static void checkLinks(LinkMap links, int nbLinks, LinkMap verifiedLinksMap, LinkMap rejectedLinks) {
+		
+		LinkMap verifiedLinks = verifiedLinksMap;
+		
 		for (Map.Entry<String, List<String>> entry : links.getLinksMap().entrySet())
 		{
-			String bugKey = entry.getKey();
 			if(verifiedLinks.containsKey(entry.getKey())) {
 				for(String commit : entry.getValue())
 					if(verifiedLinks.valueContains(entry.getKey(), commit))
 						truePositives++;
-					else
-						falsePositives++;
-				List<String> verifiedCommits = (List<String>) verifiedLinks.get(bugKey);
-				int nbVerifiedCommits = verifiedCommits.size();
-				int nbCommits = entry.getValue().size();
-				falseNegatives += nbVerifiedCommits > nbCommits ? nbVerifiedCommits - nbCommits : 0;
 			}
-			else
-				falsePositives++;
 		}
+		
+		for (Map.Entry<String, List<String>> entry : rejectedLinks.getLinksMap().entrySet())
+		{
+			if(verifiedLinks.containsKey(entry.getKey()))
+				for(String commit : entry.getValue())
+					if(verifiedLinks.valueContains(entry.getKey(), commit))
+						falseNegatives++;
+		}
+		
+		falsePositives = nbLinks - truePositives;
+		
 	}
 }
 

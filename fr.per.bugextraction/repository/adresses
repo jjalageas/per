@@ -1,2 +1,39 @@
 "url":"https://svn.apache.org/repos/asf/activemq/trunk/",
 		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2012,05,9,20,06,00);
+
+"url":"http://svn.apache.org/repos/asf/mahout/trunk/"
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2012,05,10,19,44,00);
+
+"url":"http://svn.apache.org/repos/asf/felix/trunk/"
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2012,05,17,18,24,00);
+
+"url":"http://svn.apache.org/repos/asf/struts/struts1/trunk"
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2009,9,18,06,9,00);
+
+"url":"http://svn.apache.org/repos/asf/hadoop/common/trunk/"
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2012,05,12,06,04,00);
+
+"url":"http://svn.apache.org/repos/asf/lucene/dev/trunk/"
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2012,05,07,11,03,00);
+
+"url":"http://svn.apache.org/repos/asf/opennlp/trunk/"
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2012,04,20,14,23,00);
+
+"url":"http://svn.apache.org/repos/asf/stdcxx/trunk/"
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2012,01,18,19,06,00);
+
+"url":"http://svn.apache.org/repos/asf/xalan/c/trunk/"
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2011,11,07,18,35,00);
+
+"url":"http://svn.apache.org/repos/asf/xerces/c/trunk/"	
+		"class":"SvnKitSourceExtractor"
+		//date last commit = Date limitDate = new Date(2012,04,23,12,45,00);
